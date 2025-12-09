@@ -17,7 +17,7 @@ class DataSet(torch.utils.data.Dataset):
     This class provides the torch.Dataloader-loadable dataset.
     """
 
-    def __init__(self, properties_dim=[3, 3, 3], game_size=10, scaling_factor=10, device='cuda', testing=False):
+    def __init__(self, properties_dim=[3, 3, 3], game_size=10, scaling_factor=10, device='cuda', testing=False, IsHierarchical=False):
         """
         properties_dim: vector that defines how many attributes and features per attributes the dataset should contain,
         defaults to a 3x3x3 dataset
@@ -34,7 +34,7 @@ class DataSet(torch.utils.data.Dataset):
         self.all_objects = self._get_all_possible_objects(properties_dim)
         self.encoding_func = self._many_hot_encoding
         # get all concepts
-        self.concepts = self.get_all_concepts()
+        self.concepts = self.get_all_concepts(IsHierarchical)
 
         # generate dataset
         if not testing:
@@ -201,14 +201,14 @@ class DataSet(torch.utils.data.Dataset):
             context_new.append([random.choices(context, k=self.game_size), context_condition])
         return context_new
 
-    def get_all_concepts(self):
+    def get_all_concepts(self, IsHierarchical = False):
         """
         Returns all possible concepts for a given dataset size.
         Concepts consist of (objects, fixed) tuples
             objects: a list with all object-tuples that satisfy the concept
             fixed: a tuple that denotes how many and which attributes are fixed
         """
-        fixed_vectors = self.get_fixed_vectors(self.properties_dim)
+        fixed_vectors = self.get_fixed_vectors(self.properties_dim, IsHierarchical)
         # create all possible concepts
         all_fixed_object_pairs = list(itertools.product(self.all_objects, fixed_vectors))
 
@@ -252,7 +252,7 @@ class DataSet(torch.utils.data.Dataset):
         return satisfied
 
     @staticmethod
-    def get_fixed_vectors(properties_dim):
+    def get_fixed_vectors(properties_dim, isHeranchical = False):
         """
         Returns all possible fixed vectors for a given dataset size.
         Fixed vectors are vectors of length len(properties_dim), where 1 denotes that an attribute is fixed, 0 that it isn't.
@@ -262,13 +262,20 @@ class DataSet(torch.utils.data.Dataset):
         # concrete: [(1,1,0), (0,1,1), (1,0,1)]
         # most concrete: [(1,1,1)]
         # for variable dataset sizes
-
-        # range(0,2) because I want [0,1] values for whether an attribute is fixed or not
-        list_of_dim = [range(0, 2) for dim in properties_dim]
-        fixed_vectors = list(itertools.product(*list_of_dim))
-        # remove first element (0,..,0) as one attribute always has to be fixed
-        fixed_vectors.pop(0)
-        return fixed_vectors
+        if not isHeranchical:
+            # range(0,2) because I want [0,1] values for whether an attribute is fixed or not
+            list_of_dim = [range(0, 2) for dim in properties_dim]
+            fixed_vectors = list(itertools.product(*list_of_dim))
+            # remove first element (0,..,0) as one attribute always has to be fixed
+            fixed_vectors.pop(0)
+            return fixed_vectors
+        else:
+            # range(0,2) because I want [0,1] values for whether an attribute is fixed or not
+            list_of_dim = [range(0, 2) for dim in properties_dim]
+            fixed_vectors = list(itertools.product(*list_of_dim))
+            # remove first element (0,..,0) as one attribute always has to be fixed
+            # fixed_vectors.pop(0)
+            return fixed_vectors
 
     @staticmethod
     def get_all_objects_for_a_concept(properties_dim, features, fixed):
