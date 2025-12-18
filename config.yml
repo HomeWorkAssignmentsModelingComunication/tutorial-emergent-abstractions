@@ -1,8 +1,8 @@
-save: False # save results
+save: True # save results
 learning_rate: 0.001
 batch_size: 32
 n_epochs: 10
-load_dataset: '' # dataset can be created with pickle_ds.py and then loaded
+load_dataset: 'True/dim(3,4)_sf10.ds' # dataset can be created with pickle_ds.py and then loaded
 attributes: 3 # number of attributes of objects
 values: 4 # number of values of objects
 game_size: 10 # number of objects that together form a target concept / context
@@ -18,3 +18,5 @@ length_cost: 0.0 # length cost pressure
 path: ""
 context_unaware: False # game setting: if false, context-aware is trained
 load_checkpoint: False # skip training and load pretrained model from checkpoint
+save_path: ""
+hierarchical: True  # or True

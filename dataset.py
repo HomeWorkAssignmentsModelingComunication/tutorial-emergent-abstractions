@@ -17,7 +17,7 @@ class DataSet(torch.utils.data.Dataset):
     This class provides the torch.Dataloader-loadable dataset.
     """
 
-    def __init__(self, properties_dim=[3, 3, 3], game_size=10, scaling_factor=10, device='cuda', testing=False):
+    def __init__(self, properties_dim=[3, 3, 3], game_size=10, scaling_factor=10, device='cuda', testing=False, hierarchical=False): #hierarchical=False
         """
         properties_dim: vector that defines how many attributes and features per attributes the dataset should contain,
         defaults to a 3x3x3 dataset
@@ -29,6 +29,8 @@ class DataSet(torch.utils.data.Dataset):
         self.game_size = game_size
         self.scaling_factor = scaling_factor
         self.device = device
+        # NEW
+        self.hierarchical = hierarchical
 
         self.properties_dim = properties_dim
         self.all_objects = self._get_all_possible_objects(properties_dim)
@@ -208,7 +210,7 @@ class DataSet(torch.utils.data.Dataset):
             objects: a list with all object-tuples that satisfy the concept
             fixed: a tuple that denotes how many and which attributes are fixed
         """
-        fixed_vectors = self.get_fixed_vectors(self.properties_dim)
+        fixed_vectors = self.get_fixed_vectors(self.properties_dim, hierarchical=self.hierarchical)
         # create all possible concepts
         all_fixed_object_pairs = list(itertools.product(self.all_objects, fixed_vectors))
 
@@ -252,7 +254,7 @@ class DataSet(torch.utils.data.Dataset):
         return satisfied
 
     @staticmethod
-    def get_fixed_vectors(properties_dim):
+    def get_fixed_vectors(properties_dim, hierarchical):
         """
         Returns all possible fixed vectors for a given dataset size.
         Fixed vectors are vectors of length len(properties_dim), where 1 denotes that an attribute is fixed, 0 that it isn't.
@@ -262,12 +264,26 @@ class DataSet(torch.utils.data.Dataset):
         # concrete: [(1,1,0), (0,1,1), (1,0,1)]
         # most concrete: [(1,1,1)]
         # for variable dataset sizes
-
         # range(0,2) because I want [0,1] values for whether an attribute is fixed or not
-        list_of_dim = [range(0, 2) for dim in properties_dim]
-        fixed_vectors = list(itertools.product(*list_of_dim))
-        # remove first element (0,..,0) as one attribute always has to be fixed
-        fixed_vectors.pop(0)
+        if hierarchical == False:
+            list_of_dim = [range(0, 2) for dim in properties_dim]
+            fixed_vectors = list(itertools.product(*list_of_dim))
+            # remove first element (0,..,0) as one attribute always has to be fixed
+            fixed_vectors.pop(0)
+        else:
+            #new
+            # we get 
+            # (1,0,0), (1,1,0), (1,1,1) for dim = 3
+            #from general to concrete
+            num_attributes = len(properties_dim)
+            fixed_vectors = []
+
+            for level in range(1, num_attributes + 1):
+                vector = tuple(
+                    1 if i < level else 0
+                    for i in range(num_attributes)
+                )
+                fixed_vectors.append(vector)
         return fixed_vectors
 
     @staticmethod

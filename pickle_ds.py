@@ -17,16 +17,19 @@ parser.add_argument("--save", type=bool, default=True)
 
 args = parser.parse_args()
 
+# new
+hierarchical = "True"
+save_path = 'data/'+ hierarchical
 # prepare folder for saving
-if not os.path.exists('data/'):
-    os.makedirs('data/')
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
-data_set = DataSet(args.dimensions,
+data_set = DataSet(args.dimensions, 
                    game_size=args.game_size,
                    scaling_factor=args.scaling_factor,
                    device='cpu')
 
-path = ('data/dim(' + str(len(args.dimensions)) + ',' + str(args.dimensions[0]) + ')' + sample + '_sf' +
+path = (save_path + '/dim(' + str(len(args.dimensions)) + ',' + str(args.dimensions[0]) + ')' + '_sf' + #changed sample to hierarchical
         str(args.scaling_factor) + '.ds')
 
 if args.save:
