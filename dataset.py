@@ -17,7 +17,7 @@ class DataSet(torch.utils.data.Dataset):
     This class provides the torch.Dataloader-loadable dataset.
     """
 
-    def __init__(self, properties_dim=[3, 3, 3], game_size=10, scaling_factor=10, device='cuda', testing=False, hierarchical=False): #hierarchical=False
+    def __init__(self, properties_dim=[3, 3, 3], game_size=10, scaling_factor=10, device='cuda', testing=False, hierarchical=True): #hierarchical=False
         """
         properties_dim: vector that defines how many attributes and features per attributes the dataset should contain,
         defaults to a 3x3x3 dataset

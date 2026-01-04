@@ -18,7 +18,7 @@ parser.add_argument("--save", type=bool, default=True)
 args = parser.parse_args()
 
 # new
-hierarchical = "True"
+hierarchical = "False" #or True
 save_path = 'data/'+ hierarchical
 # prepare folder for saving
 if not os.path.exists(save_path):
